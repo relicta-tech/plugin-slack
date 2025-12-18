@@ -177,10 +177,10 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Set or clear environment variable
 			if tt.envWebhook != "" {
-				os.Setenv("SLACK_WEBHOOK_URL", tt.envWebhook)
-				defer os.Unsetenv("SLACK_WEBHOOK_URL")
+				_ = os.Setenv("SLACK_WEBHOOK_URL", tt.envWebhook)
+				defer func() { _ = os.Unsetenv("SLACK_WEBHOOK_URL") }()
 			} else {
-				os.Unsetenv("SLACK_WEBHOOK_URL")
+				_ = os.Unsetenv("SLACK_WEBHOOK_URL")
 			}
 
 			resp, err := p.Validate(ctx, tt.config)
@@ -325,12 +325,12 @@ func TestParseConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Clear environment
-			os.Unsetenv("SLACK_WEBHOOK_URL")
+			_ = os.Unsetenv("SLACK_WEBHOOK_URL")
 
 			// Set test environment variables
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
-				defer os.Unsetenv(k)
+				_ = os.Setenv(k, v)
+				defer func(key string) { _ = os.Unsetenv(key) }(k)
 			}
 
 			cfg := p.parseConfig(tt.config)
@@ -1033,7 +1033,7 @@ func TestSendMessageActual(t *testing.T) {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("ok"))
+			_, _ = w.Write([]byte("ok"))
 		}))
 		defer server.Close()
 
